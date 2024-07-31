@@ -1,0 +1,5 @@
+/config/config.json
+.gitingnore
+package-lock.json
+node_modules
+.env
