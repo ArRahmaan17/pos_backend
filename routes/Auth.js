@@ -38,14 +38,14 @@ route.post('/login', validationSchemaLogin, async (req, res) => {
     if (userRequested) {
         bcrypt.compare(req.body.password, userRequested.password, async (err, result) => {
             if (result) {
-                const accessToken = sign({ username: userRequested.username, id: userRequested.id }, process.env.SECRET);
+                const accessToken = sign({ username: userRequested.username, id: userRequested.id }, process.env.SECRET, { expiresIn: '2 days' });
                 return res.status(200).json({ message: 'login successfully', data: accessToken });
             } else {
-                return res.status(422).json({ 'message': 'password and username mismatch' });
+                return res.status(422).json({ 'message': 'mismatch username and password combination' });
             }
         });
     } else {
-        return res.status(404).json({ 'message': 'user not found' });
+        return res.status(404).json({ 'message': 'The user you’re searching for doesn’t appear to be in our system. Verify the username and try again.' });
     }
 });
 
