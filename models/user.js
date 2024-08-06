@@ -10,11 +10,10 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // User.hasOne(models.Role, {
-      //   onUpdate: 'cascade',
-      //   onDelete: 'cascade',
-      //   foreignKey: 'roleId'
-      // });
+      User.hasMany(models.RoleUserCustomer, {
+        onUpdate: 'cascade',
+        onDelete: 'cascade',
+      });
     }
   }
   User.init({
@@ -26,7 +25,6 @@ module.exports = (sequelize, DataTypes) => {
     password: { type: DataTypes.STRING, allowNull: false },
     address: { type: DataTypes.STRING, allowNull: true },
     profilePicture: { type: DataTypes.STRING, allowNull: true },
-    roleId: { type: DataTypes.INTEGER, allowNull: false },
   }, {
     sequelize,
     modelName: 'User',

@@ -33,9 +33,6 @@ module.exports = {
       profilePicture: {
         type: Sequelize.STRING, allowNull: true
       },
-      roleId: {
-        type: Sequelize.INTEGER
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -47,11 +44,6 @@ module.exports = {
         allowNull: true,
         type: Sequelize.DATE
       }
-    });
-    User.hasOne(models.Role, {
-      onUpdate: 'cascade',
-      onDelete: 'cascade',
-      foreignKey: 'roleId'
     });
   },
   async down(queryInterface, Sequelize) {

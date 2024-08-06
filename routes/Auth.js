@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const route = express.Router();
 const { body, validationResult } = require('express-validator');
-const moment = require('moment');
 const process = require('process');
 const { User } = require('../models');
 const bcrypt = require('bcrypt');
@@ -26,26 +25,33 @@ const validationSchemaRegistration = [
             throw new Error('is invalid');
         }
     })];
-const validationSchemaLogin = [body('username').trim().notEmpty(),
-body('password').trim().notEmpty()];
+const validationSchemaLogin = [
+    body('username').trim().notEmpty(),
+    body('password').trim().notEmpty()
+];
 
 route.post('/login', validationSchemaLogin, async (req, res) => {
-    let userRequested = await User.scope('withPassword').findOne({
-        where: {
-            [Op.or]: [{ email: req.body.username }, { username: req.body.username }]
-        }
-    });
-    if (userRequested) {
-        bcrypt.compare(req.body.password, userRequested.password, async (err, result) => {
-            if (result) {
-                const accessToken = sign({ username: userRequested.username, id: userRequested.id }, process.env.SECRET, { expiresIn: '2 days' });
-                return res.status(200).json({ message: 'login successfully', data: accessToken });
-            } else {
-                return res.status(422).json({ 'message': 'mismatch username and password combination' });
+    const result = validationResult(req);
+    if (result.isEmpty()) {
+        let userRequested = await User.scope('withPassword').findOne({
+            where: {
+                [Op.or]: [{ email: req.body.username }, { username: req.body.username }]
             }
         });
+        if (userRequested) {
+            bcrypt.compare(req.body.password, userRequested.password, async (err, result) => {
+                if (result) {
+                    const accessToken = sign({ username: userRequested.username, id: userRequested.id }, process.env.SECRET, { expiresIn: '2 days' });
+                    return res.status(200).json({ message: 'login successfully', data: accessToken });
+                } else {
+                    return res.status(422).json({ 'message': 'mismatch username and password combination' });
+                }
+            });
+        } else {
+            return res.status(404).json({ 'message': 'The user you’re searching for doesn’t appear to be in our system. Verify the username and try again.' });
+        }
     } else {
-        return res.status(404).json({ 'message': 'The user you’re searching for doesn’t appear to be in our system. Verify the username and try again.' });
+        return res.status(422).json({ 'message': 'Your registration is failed', 'error': await removeDuplicatedData(result.array(), 'path') });
     }
 });
 
